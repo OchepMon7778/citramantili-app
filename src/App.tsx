@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
+// PERBAIKAN: Impor createClient langsung dari library yang sudah diinstall oleh CodeSandbox
+import { createClient } from "@supabase/supabase-js";
 
-// --- Ikon SVG (Tidak perlu diubah) ---
+// --- PERBAIKAN: Inisialisasi Supabase Client di luar komponen ---
+// Ini adalah cara yang lebih andal dan standar untuk lingkungan seperti CodeSandbox.
+const supabaseUrl = "https://vzkfyisefbgxtrsenmn.supabase.co";
+const supabaseAnonKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6a2Z5c2lzZWZieGd6dHJzZW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzgxMTIsImV4cCI6MjA2ODg1NDExMn0.H_-aCCWXJNPA2abOz1yXwKu6JYDnrCR_RKcZLAGX28E";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// --- Ikon SVG (Tidak perlu diubah, ini untuk ikon-ikon kecil) ---
 const StarIcon = ({ className }) => (
   <svg
     className={className}
@@ -27,22 +36,6 @@ const ArrowLeftIcon = ({ className }) => (
     />
   </svg>
 );
-const CalendarIcon = ({ className }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008zm-3.008 0h.008v.008h-.008v-.008zm6.008 0h.008v.008h-.008v-.008zm-3.008 3h.008v.008h-.008v-.008zm6.008 3h.008v.008h-.008v-.008zm-6.008 0h.008v.008h-.008v-.008z"
-    />
-  </svg>
-);
 
 // --- KOMPONEN UI ---
 function Header() {
@@ -50,8 +43,9 @@ function Header() {
     <header className="bg-white/80 backdrop-blur-lg sticky top-0 z-40 shadow-sm">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
+          {/* PERBAIKAN: Menggunakan tag <img> dengan URL dari Supabase Storage */}
           <img
-            src="https://storage.googleapis.com/gemini-prod-us-west1-assets/images/5753907e78b776a3.png"
+            src="https://vzkfysisefbxgztrsemn.supabase.co/storage/v1/object/public/assets//Logo%20CitraMantili.jpg"
             alt="Logo Citra Mantili"
             className="h-10 w-10 object-contain"
           />
@@ -219,56 +213,15 @@ export default function App() {
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [supabase, setSupabase] = useState(null);
   const [error, setError] = useState(null);
-
-  // Efek untuk memuat script Supabase
-  useEffect(() => {
-    const supabaseCdnUrl = "https://unpkg.com/@supabase/supabase-js@2";
-    if (document.querySelector(`script[src="${supabaseCdnUrl}"]`)) {
-      const initializeClient = () => {
-        if (window.supabase) {
-          const client = window.supabase.createClient(
-            "https://vzkfyisefbgxtrsenmn.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6a2Z5c2lzZWZieGd6dHJzZW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzgxMTIsImV4cCI6MjA2ODg1NDExMn0.H_-aCCWXJNPA2abOz1yXwKu6JYDnrCR_RKcZLAGX28E"
-          );
-          setSupabase(client);
-        } else {
-          setTimeout(initializeClient, 50);
-        }
-      };
-      initializeClient();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = supabaseCdnUrl;
-    script.async = true;
-    script.onload = () => {
-      const client = window.supabase.createClient(
-        "https://vzkfyisefbgxtrsenmn.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6a2Z5c2lzZWZieGd6dHJzZW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzgxMTIsImV4cCI6MjA2ODg1NDExMn0.H_-aCCWXJNPA2abOz1yXwKu6JYDnrCR_RKcZLAGX28E"
-      );
-      setSupabase(client);
-    };
-    document.body.appendChild(script);
-    return () => {
-      const existingScript = document.querySelector(
-        `script[src="${supabaseCdnUrl}"]`
-      );
-      if (existingScript) document.body.removeChild(existingScript);
-    };
-  }, []);
 
   // Efek untuk mengambil data layanan
   useEffect(() => {
-    if (!supabase) return;
-
-    // --- PERUBAHAN UTAMA DI SINI ---
     async function getServicesViaFunction() {
       setLoading(true);
       setError(null);
 
-      // Panggil Edge Function, bukan tabel secara langsung
+      // Gunakan client supabase yang sudah diinisialisasi di atas
       const { data: servicesData, error: functionError } =
         await supabase.functions.invoke("get-services-proxy");
 
@@ -292,7 +245,7 @@ export default function App() {
     }
 
     getServicesViaFunction();
-  }, [supabase]);
+  }, []); // Cukup dijalankan sekali saat komponen dimuat
 
   // --- FUNGSI NAVIGASI ---
   const handleSelectService = (id) => {
